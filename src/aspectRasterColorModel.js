@@ -1,13 +1,12 @@
-const TRANSPARENT = 'rgba(0,0,0,0)';
+import {
+  DEFAULT_DECODE_MIX,
+  TRANSPARENT,
+  buildColorReliefExpression,
+} from './genericRasterColorModel.js';
 
 export const ASPECT_COLOR_MODEL = {
   valueRange: [0, 255],
-  decodeMix: {
-    redFactor: 1,
-    greenFactor: 0,
-    blueFactor: 0,
-    baseShift: 0,
-  },
+  decodeMix: { ...DEFAULT_DECODE_MIX },
   sectors: [
     { id: 'N', start: 1, end: 31, color: '#3264e6' },
     { id: 'NE', start: 32, end: 63, color: '#64b4ff' },
@@ -31,18 +30,24 @@ export function normalizeAspectSelection(aspectSelection) {
   return aspectSelection;
 }
 
+export function buildAspectColorStops(aspectSelection) {
+  const selected = normalizeAspectSelection(aspectSelection);
+  return ASPECT_COLOR_MODEL.sectors.flatMap(({ id, start, end, color }) => {
+    const out = selected.has(id) ? color : TRANSPARENT;
+    return [
+      [start, out],
+      [end, out],
+    ];
+  });
+}
+
 /**
- * Mapbox raster-color equivalent transfer-function for MapLibre color-relief.
+ * Aspect preset on top of generic color-relief transfer function.
  */
 export function buildAspectColorReliefExpression(aspectSelection) {
-  const selected = normalizeAspectSelection(aspectSelection);
-  const [rangeMin] = ASPECT_COLOR_MODEL.valueRange;
-  const expression = ['interpolate', ['linear'], ['elevation'], rangeMin, TRANSPARENT];
-
-  ASPECT_COLOR_MODEL.sectors.forEach(({ id, start, end, color }) => {
-    const stopColor = selected.has(id) ? color : TRANSPARENT;
-    expression.push(start, stopColor, end, stopColor);
+  return buildColorReliefExpression({
+    colorStops: buildAspectColorStops(aspectSelection),
+    noDataValue: 0,
+    noDataColor: TRANSPARENT,
   });
-
-  return expression;
 }

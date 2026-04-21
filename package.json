@@ -1,0 +1,12 @@
+{
+  "name": "raster-colorize-maplibre",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "MapLibre client-side raster colorization modelled after Mapbox raster-color",
+  "license": "UNLICENSED",
+  "scripts": {
+    "lint": "echo 'No linter configured yet'",
+    "test": "echo 'No tests configured yet'"
+  }
+}
